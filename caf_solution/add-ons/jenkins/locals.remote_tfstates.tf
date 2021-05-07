@@ -30,8 +30,20 @@ locals {
     "landingzone" = var.landingzone.key
   }
 
-#  tags = merge(local.global_settings.tags, local.landingzone_tag, { "level" = var.landingzone.level }, { "environment" = local.global_settings.environment }, { "rover_version" = var.rover_version }, var.tags)
+  #TODO: this fiddles some values back from remote state, coping with a possible absence of
+  # the environment setting's possible absence.  This is all to set environment in tags, so
+  # it's unclear if this is needed.
+  #
+  _gsTmp = data.terraform_remote_state.remote[var.landingzone.global_settings_key].outputs
+  global_settings = lookup(local._gsTmp, "global_settings", { "tags" = { }, "environment" = "None" })
+  _environmentTmp = lookup(local.global_settings,"environment",null)
+  environmentGlobal = null != local._environmentTmp ? { "environment" = local._environmentTmp } : { }
 
-# global_settings = data.terraform_remote_state.remote[var.landingzone.global_settings_key].outputs.objects[var.landingzone.global_settings_key].global_settings
+  tags = merge(local.global_settings.tags,
+              local.landingzone_tag,
+              { "level" = var.landingzone.level },
+              local.environmentGlobal,
+              { "rover_version" = var.rover_version },
+              var.tags)
 
 }
