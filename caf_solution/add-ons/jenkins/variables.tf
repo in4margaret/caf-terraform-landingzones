@@ -1,4 +1,8 @@
 # Map of the remote data state for lower level
+
+variable "jenkinsServers" {
+}
+
 variable "lower_storage_account_name" {
   default = {}
 }
