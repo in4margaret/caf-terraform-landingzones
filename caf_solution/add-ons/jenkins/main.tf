@@ -35,15 +35,15 @@ data "azurerm_client_config" "current" {}
 locals {
 
   # Update the tfstates map
-  tfstates = merge(
-    tomap(
-      {
-        (var.landingzone.key) = local.backend[var.landingzone.backend_type]
-      }
-    )
-    ,
-    data.terraform_remote_state.remote[var.landingzone.global_settings_key].outputs.tfstates
-  )
+#  tfstates = merge(
+#    tomap(
+#      {
+#        (var.landingzone.key) = local.backend[var.landingzone.backend_type]
+#      }
+#    )
+#    ,
+#    data.terraform_remote_state.remote[var.landingzone.global_settings_key].outputs.tfstates
+#  )
 
 
   backend = {
