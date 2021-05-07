@@ -11,9 +11,13 @@ landingzone = {
   }
 }
 
-jenkins_rg = {
-  j_vm = {
-    group_name  = "jnvm"
+jenkinsServers = {
+  JenkinsServer01 = {
+    resource_group_name = "Jenkins-SE"
+    location = "eastus"
+  },
+  JenkinsServer02 = {
+    resource_group_name = "Jenkins-SE2"
     location = "eastus"
   }
 }
