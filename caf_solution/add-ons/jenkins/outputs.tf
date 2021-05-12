@@ -2,24 +2,48 @@
 # Output is a single map object with each server as a key
 # and an object value of information. e.g.,
 #
-#  JenkinsServers = {
-#     "JenkinsServer01" = {
-#        "admin_id" = "adminuser"
-#        "internal_ip" = "10.0.2.4"
-#        "location" = "eastus"
-#        "public_ip" = "52.170.22.119"
-#        "resource_group" = "Jenkins-SE"
-#        "sku" = "Standard_F2"
+# JenkinsServers = {
+#   "JenkinsServer01" = {
+#       "admin_SSH_Info" = {
+#       "privateKeyFile" = "~/.ssh/id_rsa.pem"
+#       "publicKeyFile" = "~/.ssh/id_rsa.pub"
+#       }
+#       "admin_id" = "adminuser"
+#       "internal_ip" = "10.0.0.4"
+#       "location" = "eastus"
+#       "public_ip" = "52.168.1.129"
+#       "resource_group" = "Jenkins-SE"
+#       "sku" = "Standard_F2"
+#       "tags" = tomap({
+#       "caf_level" = "level1"
+#       "caf_name" = "100-V5.tfstate"
+#       "caf_stateKey" = "100-V5.tfstate"
+#       "environment" = "shawn02"
+#       "lastUpdated" = "2021-05-12T05:37:09Z"
+#       "serverRole" = "Jenkins"
+#       })
 #     }
-#     "JenkinsServerABC" = {
-#        "admin_id" = "adminuser"
-#        "internal_ip" = "10.0.2.4"
-#        "location" = "eastus"
-#        "public_ip" = "52.168.77.52"
-#        "resource_group" = "Jenkins-SE2"
-#        "sku" = "Standard_F2"
+#   "JenkinsServer02" = {
+#       "admin_SSH_Info" = {
+#       "privateKeyFile" = "~/.ssh/id_rsa.pem"
+#       "publicKeyFile" = "~/.ssh/id_rsa.pub"
+#       }
+#       "admin_id" = "adminuser"
+#       "internal_ip" = "10.0.0.4"
+#       "location" = "eastus"
+#       "public_ip" = "52.168.1.148"
+#       "resource_group" = "Jenkins-SE2"
+#       "sku" = "Standard_F2"
+#       "tags" = tomap({
+#       "caf_level" = "level1"
+#       "caf_name" = "100-V5.tfstate"
+#       "caf_stateKey" = "100-V5.tfstate"
+#       "environment" = "shawn02"
+#       "lastUpdated" = "2021-05-12T05:15:49Z"
+#       "serverRole" = "Jenkins"
+#       })
 #     }
-#  }
+# }
 
 output "JenkinsServers" {
     value = module.jenkinsServer.*[0]
