@@ -1,53 +1,44 @@
-# Map of the remote data state for lower level
+# Variables from the users's TF file
 
 variable "jenkinsServers" {
-}
-
-variable "lower_storage_account_name" {
-  default = {}
-}
-variable "lower_container_name" {
-  default = {}
-}
-variable "lower_resource_group_name" {
-  default = {}
-}
-
-variable "tfstate_storage_account_name" {
-  default = {}
-}
-variable "tfstate_container_name" {
-  default = {}
-}
-variable "tfstate_key" {
-  default = {}
-}
-variable "tfstate_resource_group_name" {
-  default = {}
+  description = "A map of server information with keys == Servername"
+  type = map
 }
 
 variable "global_settings" {
-  default = {}
-}
-variable "tenant_id" {
+  description = "Global settings object (see module README.md)"
   default = {}
 }
 variable "landingzone" {
   default = {}
 }
 
-variable "rover_version" {
-  default = null
-}
-
 variable "tags" {
+  type = map
   default = null
 }
 
-variable "jenkins_rg" {
-  default = {}
-}
+# Exported from rover via environment variables.  e.g.,
+# https://github.com/aztfmod/rover/blob/5e65914803542638a262cc2f87d17f77cb06007c/scripts/tfc.sh#L167
 
-variable "jenkins_vm" {
-  default = {}
+variable "tenant_id" { }
+variable "lower_storage_account_name" { }
+variable "lower_container_name" { }
+variable "lower_resource_group_name" { }
+variable "tfstate_storage_account_name" { }
+variable "tfstate_container_name" { }
+variable "tfstate_resource_group_name" { }
+variable "tfstate_key" { }
+variable "tf_name" { }
+variable "level" { }
+variable "rover_version" { # set by Rover
+  type = string
+  default = null
 }
+variable "environment" { }
+
+#####################################
+#Debugging
+#output "VarGlobalSettings" { value = var.global_settings }
+#output "VarLandingZone" { value = var.landingzone }
+#output "VarTags" { value = var.tags }

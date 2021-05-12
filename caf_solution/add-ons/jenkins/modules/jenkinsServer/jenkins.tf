@@ -1,15 +1,31 @@
 #
 # Jenkins server module.
 #
-locals {
-  # a bit of fiddling for resource prefixes
-  #  as underscores aren't allowed in some names
-  _p0 = var.resourcePrefix == null ? var.vmName : var.resourcePrefix
-  _p = replace(local._p0,"_","-")
 
-  # names for the various resources
+resource "random_id" "vmPart" {
+  byte_length = 4
+}
+
+locals {
+
+  # Did we receive a VM name or should we construct one?
+  _constructVMName = var.vmName == null
+  _vmNameTmp = local._constructVMName ? "Jenkins-${random_id.vmPart.b64_std}" : var.vmName
+
+  # a bit of fiddling for resource prefixes as underscores aren't allowed in some names
+  _p0 = var.resourcePrefix == null ? local._vmNameTmp : var.resourcePrefix
+  _p1 = replace(local._p0,"_","-")
+  # check if the prefix starts with a digit -- which can cause naming issues.
+  # If it is a digit, replace the lead character with 'P'
+  _p2 = contains(["0","1","2","3","4","5","6","7","8","9"], substr(local._p1,0,1)) ? "P${substr(local._p1,1,length(local._p1)-1)}" : local._p1
+  _p = local._p2
+
+  #
+  # Names for the various resources
+  #
   nameRG = var.rgName
-  nameVM = var.vmName
+  # if we weren't given a VM name, construct one prefixed by the common resource prefix.
+  nameVM = local._constructVMName ? "${local._p}-${local._vmNameTmp}" : local._vmNameTmp
   nameVNET = "${local._p}-vnet"
   namePublicIP = "${local._p}-pip"
   nameSubnet01 = "${local._p}-sn-1"
@@ -17,11 +33,10 @@ locals {
 
   serverSku = var.serverSku
 
-  adminUser = "adminuser"
-
   tags = merge(
       {
         environment = "Jenkins",
+        serverRole = "Jenkins",
         lastUpdated = timestamp()
       }, var.tags)
 
@@ -41,7 +56,7 @@ resource "azurerm_virtual_network" "jennetwork" {
     name                = local.nameVNET
     location            = local.location
     resource_group_name = local.nameRG
-    address_space       = ["10.0.0.0/16"]
+    address_space       = [ var.vnetAddressSpace ]
 
     tags                = local.tags
     lifecycle { ignore_changes = [ tags["lastUpdated"] ] }
@@ -49,10 +64,10 @@ resource "azurerm_virtual_network" "jennetwork" {
 
 resource "azurerm_subnet" "jensubnet" {
     depends_on = [azurerm_virtual_network.jennetwork]
-    name                 = local.nameSubnet01
-    virtual_network_name = azurerm_virtual_network.jennetwork.name
-    resource_group_name =  local.nameRG
-    address_prefixes       = ["10.0.2.0/24"]
+    name                  = local.nameSubnet01
+    virtual_network_name  = azurerm_virtual_network.jennetwork.name
+    resource_group_name   =  local.nameRG
+    address_prefixes      = [ var.subnetAddressSpace ]
 }
 
 resource "azurerm_public_ip" "jnPubIP" {
@@ -102,10 +117,10 @@ resource "azurerm_linux_virtual_machine" "jenvm" {
   tags                = local.tags
   lifecycle { ignore_changes = [ tags["lastUpdated"] ] }
 
-  admin_username      = local.adminUser
+  admin_username      = var.adminUser
   admin_ssh_key {
-    username   = local.adminUser
-    public_key = file("~/.ssh/id_rsa.pub")
+    username   = var.adminUser
+    public_key = file(var.adminUserSSHPublicKeyFile)
   }
 
   os_disk {
@@ -137,8 +152,8 @@ resource "azurerm_linux_virtual_machine" "jenvm" {
     ]
     connection {
       type = "ssh"
-      user = local.adminUser
-      private_key = file("~/.ssh/SENexis_key.pem")
+      user = var.adminUser
+      private_key = file(var.adminUserSSHPrivateKeyFile)
       host = azurerm_public_ip.jnPubIP.ip_address
     }
   }

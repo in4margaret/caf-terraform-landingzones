@@ -1,27 +1,46 @@
 #
-# Outputs from the Jenkins Server module.
+# Outputs from the Jenkins Server module for a single instance.
 #
 
 output "internal_ip" {
+  description = "Internal IP address"
   value = azurerm_linux_virtual_machine.jenvm.private_ip_address
 }
 
 output "public_ip" {
+  description = "Public IP address"
   value = azurerm_linux_virtual_machine.jenvm.public_ip_address
 }
 
 output "admin_id" {
-    value = local.adminUser
+  description = "admin user"
+  value = var.adminUser
+}
+
+output "admin_SSH_Info" {
+  description = "admin SSH Information"
+  value = {
+      "publicKeyFile" = var.adminUserSSHPublicKeyFile,
+      "privateKeyFile" = var.adminUserSSHPrivateKeyFile,
+  }
 }
 
 output "resource_group" {
-    value = local.nameRG
+  description = "Name of Resource group containing the VM instance"
+  value = local.nameRG
 }
 
 output "location" {
-    value = local.location
+  description = "Azure region where the VM instance is located"
+  value = local.location
 }
 
 output "sku" {
-    value = local.serverSku
+  description = "VM SKU for the server.  e.g. Standard_F2"
+  value = local.serverSku
+}
+
+output "tags" {
+  description = "Tags from provisioned VM"
+  value = azurerm_linux_virtual_machine.jenvm.tags
 }
