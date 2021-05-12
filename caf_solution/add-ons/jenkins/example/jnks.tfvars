@@ -1,15 +1,6 @@
-landingzone = {
-  backend_type        = "azurerm"
-  global_settings_key = "launchpad"
-  level               = "level0"
-  key                 = "jenkins-demo"
-  tfstates = {
-    launchpad = {
-      level   = "current"
-      tfstate = "caf_launchpad.tfstate"
-    }
-  }
-}
+#
+# Example provisioning two Jenkins servers in the named Resource Groups
+#
 
 jenkinsServers = {
   JenkinsServer01 = {
