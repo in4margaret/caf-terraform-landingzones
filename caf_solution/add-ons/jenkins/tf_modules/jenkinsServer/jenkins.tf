@@ -1,12 +1,23 @@
 #
-# Jenkins server module.
+# Jenkins server module
+#
+# Provision a VM with a public and private IP, on it's own subnet in a new VNET.
 #
 
-resource "random_id" "vmPart" {
+resource "random_id" "vmPart" {  # used only if no suggested VM name was provided
   byte_length = 4
 }
 
 locals {
+  # See optionalVars.tf for default values.
+
+  # Fix up defaulted admin user information
+  adminUser = var.adminUser != null ? var.adminUser : local._defaultUserInfo.userid
+  adminUserSSHPublicKeyFile = var.adminUserSSHPublicKeyFile != null ? var.adminUserSSHPublicKeyFile : local._defaultUserInfo.publicKey
+  adminUserSSHPrivateKeyFile = var.adminUserSSHPrivateKeyFile != null ? var.adminUserSSHPrivateKeyFile : local._defaultUserInfo.privateKey
+
+  # Fix up defaulted size of Jenkins Server VM instance -- e.g. "Standard_F2"
+  serverSku = var.serverSku != null ? var.serverSku : local._defaultSKU
 
   # Did we receive a VM name or should we construct one?
   _constructVMName = var.vmName == null
@@ -23,7 +34,7 @@ locals {
   #
   # Names for the various resources
   #
-  nameRG = var.rgName
+  nameRG = var.resourceGroupName
   # if we weren't given a VM name, construct one prefixed by the common resource prefix.
   nameVM = local._constructVMName ? "${local._p}-${local._vmNameTmp}" : local._vmNameTmp
   nameVNET = "${local._p}-vnet"
@@ -31,8 +42,7 @@ locals {
   nameSubnet01 = "${local._p}-sn-1"
   nameNic01 = "${local._p}-nic-1"
 
-  serverSku = var.serverSku
-
+  # Handle the case of possibly-missing tag values
   tags = merge(
       {
         environment = "Jenkins",
@@ -40,8 +50,14 @@ locals {
         lastUpdated = timestamp()
       }, var.tags)
 
+  # Which Azure region/location for the Server
   location = var.location
 }
+
+# Note: in the following resources, the lifecycle tag ensures that
+# the resource is never updated solely because we keep the
+# local.tags value "lastUpdated" at the timestamp current.
+# i.e., reflecting the time of the current terraform execution.
 
 resource "azurerm_resource_group" "jenrg" {
   name      = local.nameRG
@@ -98,8 +114,13 @@ resource "azurerm_network_interface" "jennic01" {
   }
 }
 
+# Creating and Configuring the VM Instance
+
 locals {
+    # packages needed for Jenkins
     jdk = "openjdk-8-jdk"
+
+    # Convenient definitions for brevity in the Jenkins install (see provisioner below)
     aptPrefix = "sudo DEBIAN_FRONTEND=noninteractive apt --yes -qq"
     aptUpdate = "${local.aptPrefix} update "
     aptInstall = "${local.aptPrefix} install "
@@ -117,10 +138,10 @@ resource "azurerm_linux_virtual_machine" "jenvm" {
   tags                = local.tags
   lifecycle { ignore_changes = [ tags["lastUpdated"] ] }
 
-  admin_username      = var.adminUser
+  admin_username      = local.adminUser
   admin_ssh_key {
-    username   = var.adminUser
-    public_key = file(var.adminUserSSHPublicKeyFile)
+    username   = local.adminUser
+    public_key = file(local.adminUserSSHPublicKeyFile)
   }
 
   os_disk {
@@ -128,6 +149,7 @@ resource "azurerm_linux_virtual_machine" "jenvm" {
     storage_account_type = "Standard_LRS"
   }
 
+  # base OS image
   source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
@@ -135,6 +157,7 @@ resource "azurerm_linux_virtual_machine" "jenvm" {
     version   = "latest"
   }
 
+  # Install the Jenkins software
   provisioner "remote-exec" {
     inline = [
       # general update
@@ -152,8 +175,8 @@ resource "azurerm_linux_virtual_machine" "jenvm" {
     ]
     connection {
       type = "ssh"
-      user = var.adminUser
-      private_key = file(var.adminUserSSHPrivateKeyFile)
+      user = local.adminUser
+      private_key = file(local.adminUserSSHPrivateKeyFile)
       host = azurerm_public_ip.jnPubIP.ip_address
     }
   }

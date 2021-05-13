@@ -54,17 +54,9 @@ locals {
   tags_computed = merge( {
         caf_level = local.caf_level,
         caf_stateKey = local.caf_key,
-        caf_name = var.tf_name,
+        caf_state = var.tf_name,
         environment = var.environment,
       },
       var.tags)
-
- #TODO: is this needed?
-
- # # Update the tfstates map
- # tfstates = merge(
- #   tomap( { (var.landingzone.key) = local.backend[var.landingzone.backend_type] } ),
- #   data.terraform_remote_state.remote[var.landingzone.global_settings_key].outputs.tfstates
- # )
 
 }

@@ -6,7 +6,7 @@ variable "vmName" {
 }
 
 # Name for the resource group
-variable "rgName" {
+variable "resourceGroupName" {
     description = "Name to use for the resource group"
     type = string
 }
@@ -22,7 +22,7 @@ variable "location" {
 # that will be the name of the VM.  If it is not
 # specified, a name will be constructed.
 variable "resourcePrefix" {
-    description = "A prefix to apply to inferred resource names in the RG."
+    description = "A prefix to apply to inferred resource names in the resource group."
     type = string
     default = null
 }
@@ -36,30 +36,27 @@ variable "tags" {
 variable "serverSku" {
     description = "Optional override of the server SKU"
     type = string
-    default = "Standard_F2"
+    default = null
 }
 
-variable "global_settings" {
-    description = "Global settings object (see module README.md)"
-    default = {}
-}
+# Note: for actual defaults for the 3 admin* variables, see locals in jenkins.tf
 
 variable "adminUser" {
     description = "Linux userid to use for ssh during Jenkins software install"
     type = string
-    default = "adminuser"
+    default = null
 }
 
 variable "adminUserSSHPrivateKeyFile" {
     description = "Private key file path for adminUser"
     type = string
-    default = "~/.ssh/id_rsa.pem"
+    default = null
 }
 
 variable "adminUserSSHPublicKeyFile" {
     description = "Public key file path for adminUser"
     type = string
-    default = "~/.ssh/id_rsa.pub"
+    default = null
 }
 
 variable "vnetAddressSpace" {

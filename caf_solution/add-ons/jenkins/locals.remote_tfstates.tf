@@ -1,16 +1,19 @@
 locals {
-  landingzone = {
-    current = {
-      storage_account_name = var.tfstate_storage_account_name
-      container_name       = var.tfstate_container_name
-      resource_group_name  = var.tfstate_resource_group_name
-    }
-    lower = {
-      storage_account_name = var.lower_storage_account_name
-      container_name       = var.lower_container_name
-      resource_group_name  = var.lower_resource_group_name
-    }
-  }
+  landingzone = merge(
+    {
+      current = {
+        storage_account_name = var.tfstate_storage_account_name
+        container_name       = var.tfstate_container_name
+        resource_group_name  = var.tfstate_resource_group_name
+      }
+      lower = {
+        storage_account_name = var.lower_storage_account_name
+        container_name       = var.lower_container_name
+        resource_group_name  = var.lower_resource_group_name
+      }
+      level = var.level
+    },
+    var.landingzone)
 }
 
 data "terraform_remote_state" "remote" {
@@ -30,23 +33,9 @@ locals {
     "landingzone" = local.caf_key
   }
 
-  #TODO: this fiddles some values back from remote state, coping with a possible absence of
-  # the environment setting's possible absence.  This is all to set environment in tags, so
-  # it's unclear if this is needed.
-  #
-  #_gsTmp = data.terraform_remote_state.remote[var.landingzone.global_settings_key].outputs
-  #global_settings = lookup(local._gsTmp, "global_settings", { "tags" = { }, "environment" = "None" })
-  global_settings = merge(
-    { "tags" = { }, "environment" = var.environment },
-    #data.terraform_remote_state.remote["launchpad"], #[var.landingzone.global_settings_key].outputs.objects[var.landingzone.global_settings_key].global_settings,
-    var.global_settings)
-  _environmentTmp = lookup(local.global_settings,"environment",null)
-  environmentGlobal = null != local._environmentTmp ? { "environment" = local._environmentTmp } : { }
-
-  tags = merge(local.global_settings.tags,
-              local.landingzone_tag,
-              { "level" = lookup(var.landingzone,"level", var.level) },
-              local.environmentGlobal,
-              var.rover_version == null ? { } : { "rover_version" : var.rover_version },
-              var.tags)
+  tags = merge(
+    local.landingzone_tag,
+    { "level" = lookup(var.landingzone,"level", var.level) },
+    var.rover_version == null ? { } : { "rover_version" : var.rover_version },
+    var.tags)
 }

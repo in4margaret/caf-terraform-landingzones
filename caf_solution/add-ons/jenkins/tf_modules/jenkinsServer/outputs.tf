@@ -14,14 +14,14 @@ output "public_ip" {
 
 output "admin_id" {
   description = "admin user"
-  value = var.adminUser
+  value = local.adminUser
 }
 
 output "admin_SSH_Info" {
   description = "admin SSH Information"
   value = {
-      "publicKeyFile" = var.adminUserSSHPublicKeyFile,
-      "privateKeyFile" = var.adminUserSSHPrivateKeyFile,
+      "publicKeyFile" = local.adminUserSSHPublicKeyFile,
+      "privateKeyFile" = local.adminUserSSHPrivateKeyFile,
   }
 }
 
@@ -43,4 +43,9 @@ output "sku" {
 output "tags" {
   description = "Tags from provisioned VM"
   value = azurerm_linux_virtual_machine.jenvm.tags
+}
+
+output "vm_resource_id" {
+  description = "Azure resource ID for the provisioned VM"
+  value = azurerm_linux_virtual_machine.jenvm.id
 }
